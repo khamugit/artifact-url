@@ -1,13 +1,19 @@
-FROM conjurinc/alpine
+FROM ruby:2.0
 
-ADD rubygems.pem /usr/lib/ruby/2.0.0/rubygems/ssl_certs/rubygems.pem
+RUN apt-get update && apt-get install build-essential -y
+RUN gem install aws-sdk-v1 --no-rdoc --no-ri
+RUN gem install gli --version 2.12.2 --no-rdoc --no-ri
+RUN gem install conjur-cli --version 4.19.0 --no-rdoc --no-ri
 
-RUN apk update && apk add ruby-bundler ruby-json
-
-RUN gem install aws-sdk --no-rdoc --no-ri
-
+ENV BUCKET_NAME     conjur-dev-lxc-images
 ENV DEFAULT_VERSION 2015-02-03_215149
+ENV CONJUR_ACCOUNT  conjurops
+ENV CONJUR_APPLIANCE_URL  https://conjur-master.itp.conjur.net/api
 
-ADD download-link.rb /download-link.rb
+WORKDIR /
 
-ENTRYPOINT [ "ruby", "/download-link.rb" ]
+ADD start.sh /start.sh
+ADD app.rb /app.rb
+ADD get.secrets /get.secrets
+
+ENTRYPOINT [ "/start.sh" ]
