@@ -1,9 +1,10 @@
 FROM ruby:2.0
 
-RUN apt-get update && apt-get install build-essential -y
-RUN gem install aws-sdk-v1 --no-rdoc --no-ri
-RUN gem install gli --version 2.12.2 --no-rdoc --no-ri
-RUN gem install conjur-cli --version 4.19.0 --no-rdoc --no-ri
+RUN apt-get update && \
+    apt-get install build-essential -yqq && \
+    gem install aws-sdk-v1 --no-rdoc --no-ri && \
+    gem install gli --version 2.12.2 --no-rdoc --no-ri && \
+    gem install conjur-cli --version 4.19.0 --no-rdoc --no-ri
 
 ENV BUCKET_NAME     conjur-dev-lxc-images
 ENV DEFAULT_VERSION 2015-02-03_215149
