@@ -7,7 +7,7 @@ RUN apt-get update && \
     gem install conjur-cli --version 4.19.0 --no-rdoc --no-ri
 
 ENV BUCKET_NAME     conjur-dev-lxc-images
-ENV DEFAULT_VERSION 2015-02-26_174816
+ENV DEFAULT_VERSION 2015-03-05_165528
 ENV CONJUR_ACCOUNT  conjurops
 ENV CONJUR_APPLIANCE_URL  https://conjur-master.itp.conjur.net/api
 
