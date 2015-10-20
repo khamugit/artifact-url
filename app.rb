@@ -12,7 +12,7 @@ URLBuilder = Struct.new(:bucket_name, :version, :expiration_minutes) do
   protected
 
   def object
-    fname = "conjur-appliance-#{version}.tar.bz2"
+    fname = [ folder_name, file_name ].compact.join('/')
     bucket.objects[fname].tap do |obj|
       raise "File #{bucket_name}/#{fname} does not exist" unless obj.exists?
     end
@@ -30,28 +30,97 @@ URLBuilder = Struct.new(:bucket_name, :version, :expiration_minutes) do
   end
 end
 
+class ApplianceLXCURLBuilder < URLBuilder
+  def initialize version, expiration_minutes
+    super "conjur-dev-lxc-images", version, expiration_minutes
+  end
+  
+  def folder_name
+    nil
+  end
+  
+  def file_name
+    "conjur-appliance-#{version}.tar.bz2"
+  end
+end
+
+class ApplianceDockerURLBuilder < URLBuilder
+  def initialize version, expiration_minutes
+    super "conjur-ci-images", version, expiration_minutes
+  end
+  
+  def folder_name
+    "docker"
+  end
+  
+  def file_name
+    "conjur-appliance-#{version}.tar"
+  end
+end
+
+class DebURLBuilder < URLBuilder
+  attr_reader :package
+  
+  def initialize package, version, expiration_minutes
+    super "conjur-ci-images", version, expiration_minutes
+    
+    @package = package
+  end
+  
+  def folder_name
+    "debian"
+  end
+  
+  def file_name
+    "#{package}_#{version}_amd64.deb"
+  end
+end
+
 class CLI
   extend GLI::App
 
-  program_desc 'Get presigned URL links to LXC appliance artifacts'
+  program_desc 'Get presigned URL links to Conjur artifacts'
 
-  version "0.2.0"
+  version "0.3.0"
 
   subcommand_option_handling :normal
   arguments :strict
-
-  command :get do |c|
-    c.desc 'Appliance version number'
-    c.default_value ENV['DEFAULT_VERSION']
+  
+  def self.standard_options c
+    c.desc 'Version number'
     c.arg_name 'version'
-    c.flag [:v, :"appliance-version"]
+    c.flag [:v, :"artifact-version"]
       
     c.desc 'Expiration time in minutes'
     c.arg_name 'expiration'
-    c.flag [:e, :"expiration-minutes"]
-      
+    c.flag [:e, :"expiration-minutes"]    
+  end
+
+  desc "Get a download link to the LXC appliance"
+  command :"appliance-lxc" do |c|
+    standard_options c
     c.action do |global_options,options,args|
-      puts URLBuilder.new("conjur-dev-lxc-images", options[:"appliance-version"], options[:"expiration-minutes"]).presigned_get_url
+      puts ApplianceLXCURLBuilder.new(options[:"artifact-version"], options[:"expiration-minutes"]).presigned_get_url
+    end
+  end
+  
+  desc "Get a download link to the Docker appliance"
+  command :"appliance-docker" do |c|
+    standard_options c
+    c.action do |global_options,options,args|
+      puts ApplianceDockerURLBuilder.new(options[:"artifact-version"], options[:"expiration-minutes"]).presigned_get_url
+    end
+  end
+  
+  desc "Get a download link to a Debian extension package"
+  arg "package"
+  command :"deb" do |c|
+    standard_options c
+    c.action do |global_options,options,args|
+      package = args.shift
+      raise "Missing argument : package" unless package
+      
+      puts DebURLBuilder.new(package, options[:"artifact-version"], options[:"expiration-minutes"]).presigned_get_url
     end
   end
 end
