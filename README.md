@@ -1,29 +1,14 @@
-LXC Appliance:
+# artifact-url
 
-```
+To generate an expiring link to a Docker tarball:
+
+```sh-session
+$ docker build -t conjurinc/artifact-url .
+
 $ docker run \
 	--rm \
 	-v $HOME/.netrc:/root/.netrc \
 	conjurinc/artifact-url \
-	appliance-lxc -v 2015-05-14_010025 -e 1440
-```
-
-Docker appliance:
-
-```
-$ docker run \
-	--rm \
-	-v $HOME/.netrc:/root/.netrc \
-	conjurinc/artifact-url \
-	appliance-docker -v 4.5.0 -e 1440
-```
-
-Debian package:
-
-```
-$ docker run \
-	--rm \
-	-v $HOME/.netrc:/root/.netrc \
-	conjurinc/artifact-url \
-	deb -v 0.3.3 -e 1440 conjur-authn-ldap-appliance
+	appliance-docker -v 4.6.0 -e 1440
+https://conjur-ci-images.s3.amazonaws.com/docker/conjur-appliance-4.6.0.tar?AWSAccessKeyId=AKIAJPO6V53S56MPS6SQ&Expires=1455135183&Signature=z6zUQskd39WQZGAlf3ydZ52hGdc%3D
 ```
